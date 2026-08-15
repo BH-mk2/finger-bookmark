@@ -105,3 +105,9 @@ sequenceDiagram
 ```
 
 ## 5. セキュリティ・認証境界
+1. Cognito認証（JWTトークン検証）
+    - ログイン時に発行されるJWTトークンをAPI呼び出し時に検証し、未認証の不正リクエストをAPI Gateway / Lambdaの手前でブロック。
+2. S3署名付きURL（Presigned URL）
+    - S3バケットを非公開にし、署名付きURL経由でのみアクセスを許可することで、保存したPDFへの不正アクセスを防ぐ。
+3. CORS（Cross-Origin Resource Sharing）
+    - フロントエンドのオリジンからのみアクセスを許可することで、不適切なアクセスを防ぐ
