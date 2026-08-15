@@ -60,5 +60,48 @@ sequenceDiagram
     APIGW-->>FE: 3. レスポンス { uploadUrl: "https://s3...?" }
     FE->>S3: 4. 受け取った uploadUrl に直接 PUT (ファイル本体をアップロード)
 ```
+### PDFの閲覧取得
+```mermaid
+sequenceDiagram
+    autonumber
+    actor FE as フロントエンド (Browser)
+    participant APIGW as API Gateway / Lambda
+    participant S3 as Amazon S3
+
+    FE->>APIGW: 1. 「PDFを表示したい！」 (GET /presigned-url?bookId=xxx)
+    Note over APIGW: 2. Lambda内で署名URLをローカル暗号計算！<br/>(S3への通信はゼロ)
+    APIGW-->>FE: 3. レスポンス { viewUrl: "https://s3...?" }
+    FE->>S3: 4. 受け取った viewUrl でGET（PDFデータをダウンロード）
+```
+### 読書進捗・状態の保存（Save State）
+```mermaid
+sequenceDiagram
+    autonumber
+    actor FE as フロントエンド（Browser）
+    participant APIGW as API Gateway / Lambda
+    participant DynamoDB as Amazon DynamoDB
+
+    FE->>APIGW: 1. 読書状態の保存リクエスト<br>（PUT /state, Body: {bookId, panes, fingers, bookmarks}）
+    Note over APIGW: 2. JWTトークンの検証 ＆<br>保存データのバリデーション
+    APIGW->>DB: 3. PutItem / UpdateItem（データの書き込み）
+    DB->>APIGW: 4. 書き込み成功
+    APIGW->>FE: 5. レスポンス {success: true }
+```
+### 読書進捗・状態の取得（Load State）
+```mermaid
+sequenceDiagram
+    autonumber
+    actor FE as フロントエンド（Browser）
+    participant APIGW as API Gateway / Lambda
+    participant DB as Amazon DynamoDB
+
+    FE->>APIGW: 1. 読書状態の取得リクエスト<br>（GET /state?bookId=xxx）
+    Note over APIGW: 2. JWTトークンの検証
+    APIGW->>DB: 3. GetItem（データ取得）
+    DB->>APIGW: 4. 読書状態データを返却
+    APIGW->>FE: 5. レスポンス {bookId, panes, fingers, bookmarks }
+    Note over FE: 6. 受け取ったデータで<br>フロントのStateを復元
+
+```
 
 ## 5. セキュリティ・認証境界
