@@ -79,7 +79,7 @@ sequenceDiagram
     autonumber
     actor FE as フロントエンド（Browser）
     participant APIGW as API Gateway / Lambda
-    participant DynamoDB as Amazon DynamoDB
+    participant DB as Amazon DynamoDB
 
     FE->>APIGW: 1. 読書状態の保存リクエスト<br>（PUT /state, Body: {bookId, panes, fingers, bookmarks}）
     Note over APIGW: 2. JWTトークンの検証 ＆<br>保存データのバリデーション
