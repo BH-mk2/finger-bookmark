@@ -1,12 +1,18 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useReader } from "@/hooks/useReader";
+const PdfViewer = dynamic(
+  () => import('@/components/PdfViewer').then((mod) => mod.PdfViewer),
+  { ssr: false }
+);
 
 export default function Home() {
   // カスタムフックから状態と操作関数を取り出す
   const { state, turnPage, addFinger, jumpToFinger } = useReader();
 
   const activePane = state.panes.find((p) => p.id === state.activePaneId);
+  const currentPage = activePane ? activePane.currentPageNumber : 1;
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
       <h1 className="text-4xl font-bold">FingerBookmarkへようこそ！</h1>
@@ -14,8 +20,13 @@ export default function Home() {
       <div className="bg-slate-800 p-6 rounded-lg shadow-lg mb-6 text-center border border-slate-700 min-w-[320px]">
         <h2 className="text-xl font-semibold mb-2">アクティブペイン:{state.activePaneId}</h2>
         <p className="text-4xl font-extrabold text-blue-400 my-4">
-          {activePane ? `${activePane.currentPageNumber} ページ` : "なし"}
+          {activePane ? `${currentPage} ページ` : "なし"}
         </p>
+
+        {/* PDF描画コンポーネントを配置*/}
+        <div className="my-4">
+          <PdfViewer url="/sample.pdf" pageNumber={currentPage} />
+        </div>
 
         <div className="flex justify-center gap-4 mt-4">
           <button
