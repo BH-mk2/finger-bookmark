@@ -9,7 +9,7 @@ const PdfViewer = dynamic(
 
 export default function Home() {
   // カスタムフックから状態と操作関数を取り出す
-  const { state, turnPage, addFinger, jumpToFinger } = useReader();
+  const { state, turnPage, addFinger, jumpToFinger, addPane, removePane, selectPane } = useReader();
 
   const activePane = state.panes.find((p) => p.id === state.activePaneId);
   const currentPage = activePane ? activePane.currentPageNumber : 1;
@@ -23,9 +23,28 @@ export default function Home() {
           {activePane ? `${currentPage} ページ` : "なし"}
         </p>
 
-        {/* PDF描画コンポーネントを配置*/}
-        <div className="my-4">
-          <PdfViewer url="/sample.pdf" pageNumber={currentPage} />
+        {/* ペイン追加ボタンを配置*/}
+        <button className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-bold shadow-md mb-8 transition"
+          onClick={() => addPane()}>ペインを追加する</button>
+
+        {/* PDF描画コンポーネントを横並びに配置*/}
+        <div className="flex flex-row gap-4 justify-center my-4 overflow-x-auto">
+          {state.panes.map((p) => (
+            <div
+              key={p.id} onClick={() => selectPane(p.id)}
+              className={`p-4 rounded-lg cursor-pointer transition-all
+              ${p.id === state.activePaneId ? "border-4 border-blue-500 shadow-lg shadow-blue-500/30"
+                  : "border border-slate-700"
+                }`}
+            >
+              <button
+                onClick={(e) => { e.stopPropagation(); removePane(p.id); }}
+                className="text-xs text-red-400 hover:text-red-300 mb-2">
+                ×ペインを閉じる
+              </button>
+              <PdfViewer url="/sample.pdf" pageNumber={p.currentPageNumber} />
+            </div>
+          ))}
         </div>
 
         <div className="flex justify-center gap-4 mt-4">

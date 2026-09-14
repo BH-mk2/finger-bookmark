@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Finger, ReaderState } from "../types/reader";
+import { Pane, Finger, ReaderState } from "../types/reader";
 
 export function useReader() {
     const [state, setState] = useState<ReaderState>({
@@ -54,10 +54,62 @@ export function useReader() {
         });
     };
 
+    // 4. ペインを追加する（マルチペイン対応）
+    const addPane = () => {
+        setState((prevState) => {
+            const newPaneId = `pane-${Date.now()}`;
+            const activePane = prevState.panes.find((p) => p.id == prevState.activePaneId);
+            const initialPage = activePane ? activePane.currentPageNumber : 1;
+
+            const newPane: Pane = {
+                id: newPaneId,
+                currentPageNumber: initialPage,
+            };
+
+            return {
+                ...prevState,
+                panes: [...prevState.panes, newPane],
+                activePaneId: newPaneId,
+            };
+        });
+    };
+
+    // 5. ペインを削除する（最低１つは維持）
+    const removePane = (paneId: string) => {
+        setState((prevState) => {
+            if (prevState.panes.length <= 1) return prevState;
+
+            const newPanes = prevState.panes.filter((p) => p.id != paneId);
+            const newActiveId = prevState.activePaneId == paneId ? newPanes[0].id : prevState.activePaneId;
+
+            return {
+                ...prevState,
+                panes: newPanes,
+                activePaneId: newActiveId,
+            };
+        });
+    };
+
+    // 6. 操作対象のペインを選択・切替する
+    const selectPane = (paneId: string) => {
+        setState((prevState) => {
+            const targetPane = prevState.panes.find((p) => p.id == paneId);
+            if (!targetPane) return prevState;
+
+            return {
+                ...prevState,
+                activePaneId: paneId,
+            };
+        });
+    };
+
     return {
         state,
         turnPage,
         addFinger,
         jumpToFinger,
+        addPane,
+        removePane,
+        selectPane,
     };
 }
